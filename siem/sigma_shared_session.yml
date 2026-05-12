@@ -1,0 +1,27 @@
+title: Single Session ID Used From Multiple Source IPs
+id: 7e1b2a13-1a5e-4d22-8c4d-0b4a4af2f002
+status: experimental
+description: |
+    Détecte qu'un même session ID est observé depuis 2 IPs distinctes
+    (en dehors d'un /24 commun) dans une courte fenêtre temporelle.
+    Indicateur fort d'un session hijacking suite à fixation ou vol de cookie.
+author: P03 BLUE TEAM
+date: 2026/05/12
+references:
+    - https://owasp.org/www-community/attacks/Session_hijacking_attack
+logsource:
+    product: nginx
+    service: access
+detection:
+    selection:
+        cs-cookie|contains: 'PHPSESSID='
+    timeframe: 5m
+    condition: selection | count(distinct c-ip) by sid > 1
+falsepositives:
+    - Utilisateur ayant changé de réseau
+    - Reverse proxy mal configuré (X-Forwarded-For absent)
+level: high
+tags:
+    - attack.credential_access
+    - attack.t1539
+    - cwe.384

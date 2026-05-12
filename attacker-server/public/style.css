@@ -1,0 +1,112 @@
+/* Evil Control Panel — theme noir/rouge */
+* { box-sizing: border-box; }
+body.evil {
+    margin: 0;
+    font-family: 'JetBrains Mono', Menlo, monospace;
+    background: #0a0a0a;
+    color: #e2e8f0;
+    line-height: 1.5;
+}
+header {
+    background: linear-gradient(135deg, #7f1d1d, #450a0a);
+    padding: 18px 28px;
+    border-bottom: 2px solid #b91c1c;
+}
+header h1 {
+    margin: 0;
+    font-size: 26px;
+    color: #fecaca;
+    letter-spacing: 1px;
+}
+.status {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    margin-top: 6px;
+    color: #fca5a5;
+    font-size: 13px;
+}
+.led {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #6b7280;
+    display: inline-block;
+}
+.led.ok { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+.count strong { color: #fef2f2; font-size: 18px; }
+
+.payloads, .harvest {
+    padding: 24px 28px;
+}
+.payloads h2, .harvest h2 {
+    color: #fecaca;
+    border-bottom: 1px solid #7f1d1d;
+    padding-bottom: 6px;
+}
+details {
+    background: #18181b;
+    border-left: 3px solid #b91c1c;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+}
+details summary {
+    cursor: pointer;
+    color: #fda4af;
+    font-weight: 600;
+}
+pre {
+    background: #000;
+    padding: 12px;
+    overflow-x: auto;
+    border: 1px solid #27272a;
+    border-radius: 5px;
+    margin: 8px 0;
+}
+code { color: #fde047; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 12px;
+}
+th, td {
+    padding: 8px 6px;
+    text-align: left;
+    border-bottom: 1px solid #27272a;
+    vertical-align: top;
+}
+th {
+    background: #18181b;
+    color: #f87171;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+tr.new {
+    animation: pulse 1s ease;
+}
+@keyframes pulse {
+    from { background: #7f1d1d; }
+    to   { background: transparent; }
+}
+.badge {
+    background: #7f1d1d;
+    color: #fecaca;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+}
+button {
+    background: #b91c1c;
+    color: white;
+    border: 0;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+}
+button:hover { background: #dc2626; }

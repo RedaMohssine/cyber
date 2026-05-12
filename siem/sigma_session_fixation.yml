@@ -1,0 +1,34 @@
+title: Session Fixation Attempt via Forged Session Cookie
+id: 7e1b2a13-1a5e-4d22-8c4d-0b4a4af2f001
+status: experimental
+description: |
+    Détecte une tentative de session fixation : un cookie de session est
+    présenté par un client avant que le serveur ne l'ait émis (cas typique
+    où l'attaquant injecte un SID via URL, XSS ou cookie cross-site).
+    Sur l'application sécurisée CaptusBank, l'évènement applicatif
+    `session_fingerprint_mismatch` ou `login_success` avec un old_sid
+    inconnu est révélateur.
+author: P03 BLUE TEAM
+date: 2026/05/12
+references:
+    - https://owasp.org/www-community/attacks/Session_fixation
+    - https://cwe.mitre.org/data/definitions/384.html
+logsource:
+    product: captusbank
+    service: audit_log
+detection:
+    selection_mismatch:
+        event: 'session_fingerprint_mismatch'
+        severity: 'critical'
+    selection_unknown_sid:
+        event: 'login_success'
+        detail.old_sid|startswith: 'ATTACKER_'
+    condition: selection_mismatch or selection_unknown_sid
+falsepositives:
+    - Changement légitime d'opérateur réseau (mobile -> wifi) modifiant l'IP/24
+level: high
+tags:
+    - attack.credential_access
+    - attack.t1539  # Steal Web Session Cookie
+    - cwe.384
+    - owasp.a07

@@ -1,0 +1,135 @@
+/* CaptusBank — feuille de style partagée vuln/secure */
+:root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #273549;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warn: #f59e0b;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 28px;
+    background: var(--panel);
+    border-bottom: 2px solid #334155;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand .logo { font-size: 22px; }
+.env-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: .5px;
+    font-weight: 600;
+}
+.env-vuln   { background: var(--danger); color: white; }
+.env-secure { background: var(--success); color: black; }
+
+nav { display: flex; gap: 18px; align-items: center; }
+nav .who { color: var(--muted); font-size: 13px; }
+
+.container { padding: 32px; max-width: 980px; margin: 0 auto; }
+
+.hero {
+    text-align: center;
+    padding: 60px 0;
+}
+.hero h1 { font-size: 42px; margin: 0 0 10px; }
+.hero .lead { color: var(--muted); margin-bottom: 24px; }
+.brand-text { color: var(--accent); }
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-top: 30px;
+}
+.card {
+    background: var(--panel);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+}
+.btn {
+    display: inline-block;
+    padding: 10px 22px;
+    border-radius: 6px;
+    border: 0;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn.primary { background: var(--accent); color: #0f172a; }
+.btn.primary:hover { filter: brightness(1.1); }
+
+.auth, .dashboard, .transfer, .comments, .profile {
+    background: var(--panel);
+    padding: 28px;
+    border-radius: 10px;
+}
+form label { display: block; margin: 12px 0; }
+input, textarea, select {
+    width: 100%;
+    padding: 9px 12px;
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid #475569;
+    border-radius: 5px;
+    font-family: inherit;
+}
+
+.error   { background: rgba(239,68,68,.15);  border: 1px solid var(--danger); padding: 10px; border-radius: 5px; }
+.success { background: rgba(34,197,94,.15);  border: 1px solid var(--success); padding: 10px; border-radius: 5px; }
+.notice  { background: rgba(56,189,248,.15); border: 1px solid var(--accent); padding: 10px; border-radius: 5px; }
+
+.sid-debug {
+    margin-top: 20px;
+    padding: 10px 14px;
+    background: #0b1220;
+    border-left: 3px solid var(--warn);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+}
+code { background: #0b1220; padding: 2px 6px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; }
+
+.account-card {
+    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+    padding: 30px;
+    border-radius: 12px;
+    margin: 20px 0;
+}
+.account-card .iban { font-size: 13px; opacity: .85; }
+.account-card .balance { margin-top: 12px; }
+.account-card .amount { font-size: 36px; font-weight: 700; display: block; }
+.account-card .label { font-size: 13px; opacity: .85; }
+
+.transfers { width: 100%; border-collapse: collapse; margin: 14px 0; }
+.transfers th, .transfers td { padding: 10px; border-bottom: 1px solid #334155; text-align: left; font-size: 14px; }
+.transfers th { color: var(--muted); font-weight: 500; }
+
+.comment-list { list-style: none; padding: 0; }
+.comment-list li {
+    background: var(--panel-2);
+    padding: 14px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+.comment-list header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.comment-list time { color: var(--muted); font-size: 12px; }
+
+footer { text-align: center; padding: 24px; color: var(--muted); font-size: 12px; }
