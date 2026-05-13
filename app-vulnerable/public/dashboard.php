@@ -11,8 +11,13 @@ $account = db()->prepare('SELECT * FROM accounts WHERE user_id = :uid');
 $account->execute([':uid' => $uid]);
 $account = $account->fetch();
 
-$txs = db()->prepare('SELECT * FROM transfers WHERE from_account = :aid ORDER BY id DESC LIMIT 10');
-$txs->execute([':aid' => $account['id']]);
+$txs = db()->prepare('
+    SELECT t.*, "out" as direction FROM transfers t WHERE t.from_account = :aid
+    UNION ALL
+    SELECT t.*, "in" as direction FROM transfers t WHERE t.to_iban = :iban
+    ORDER BY id DESC LIMIT 10
+');
+$txs->execute([':aid' => $account['id'], ':iban' => $account['iban']]);
 $txs = $txs->fetchAll();
 
 render_header('Tableau de bord');
@@ -36,7 +41,9 @@ render_header('Tableau de bord');
             <tr>
                 <td><?= $tx['created_at'] ?></td>
                 <td><code><?= /*VULN*/ $tx['to_iban'] ?></code></td>
-                <td>-<?= number_format($tx['amount'], 2, ',', ' ') ?> €</td>
+                <td style="color:<?= $tx['direction']==='in' ? 'green' : 'red' ?>">
+                    <?= $tx['direction']==='in' ? '+' : '-' ?><?= number_format($tx['amount'], 2, ',', ' ') ?> €
+                </td>
                 <!-- VULN majeure : note de virement non échappée -->
                 <td><?= $tx['note'] ?></td>
             </tr>

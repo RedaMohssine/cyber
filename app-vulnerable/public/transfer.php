@@ -13,10 +13,15 @@ $account = $account->fetch();
 
 $success = $error = null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $to     = trim($_POST['to_iban'] ?? '');
-    $amount = (float)($_POST['amount'] ?? 0);
-    $note   = $_POST['note'] ?? '';
+// VULN CSRF : accepte aussi les paramètres GET — toute navigation vers cette URL
+// déclenche un virement. Viole le principe HTTP : GET ne doit pas modifier des données.
+$input  = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : $_GET;
+$is_get = $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['to_iban']);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' || $is_get) {
+    $to     = trim($input['to_iban'] ?? '');
+    $amount = (float)($input['amount'] ?? 0);
+    $note   = $input['note'] ?? '';
 
     if ($amount <= 0)                        $error = 'Montant invalide.';
     elseif ($amount > $account['balance'])   $error = 'Solde insuffisant.';
@@ -27,6 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ->execute([':a' => $amount, ':id' => $account['id']]);
         db()->prepare('INSERT INTO transfers (from_account, to_iban, amount, note) VALUES (:f, :t, :a, :n)')
             ->execute([':f' => $account['id'], ':t' => $to, ':a' => $amount, ':n' => $note]);
+        // Créditer le destinataire si son IBAN existe dans la banque
+        db()->prepare('UPDATE accounts SET balance = balance + :a WHERE iban = :iban')
+            ->execute([':a' => $amount, ':iban' => $to]);
         db()->commit();
         $success = "Virement de $amount € effectué vers $to.";
         $account['balance'] -= $amount;

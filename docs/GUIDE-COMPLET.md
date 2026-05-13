@@ -873,68 +873,72 @@ En cas de fuite DB, les mots de passe en clair sont exploitables immédiatement.
 
 ## DEMO 7 — CSRF (Cross-Site Request Forgery)
 
-> **Faille démontrée** : absence de token CSRF dans `transfer.php` — le serveur accepte n'importe quelle requête POST avec un cookie valide, sans vérifier d'où elle vient.
+> **Faille démontrée** : `transfer.php` accepte les paramètres GET et n'a pas de token CSRF. Le **navigateur d'Alice** envoie automatiquement son cookie vers la banque quand elle clique un lien depuis evil.attacker.lab.
 >
-> **Différence avec XSS** : ici la requête vient d'un **outil externe** (curl), pas d'un script injecté dans la page. On prouve que le serveur ne vérifie pas l'origine de la requête.
+> **Pourquoi c'est du vrai CSRF** : c'est le navigateur d'Alice qui fait la requête — pas Mallory, pas un script injecté dans la banque. Alice est sur evil.attacker.lab et clique ce qu'elle croit être un bouton innocent.
 
 ---
 
-### Ce qu'est vraiment le CSRF
+### Ce qui rend cette attaque possible
 
-La faille CSRF c'est que `transfer.php` n'a **aucun token de vérification**. N'importe quelle requête POST avec un cookie valide est exécutée, qu'elle vienne du navigateur d'Alice, d'un script, ou d'un outil tiers.
+`transfer.php` accepte les paramètres via GET (pas seulement POST) et n'a aucun token de vérification. Quand Alice clique un lien vers `vuln.bank.local/transfer.php?...`, son navigateur envoie automatiquement son cookie `PHPSESSID` — c'est le comportement normal des navigateurs pour les navigations GET.
 
-```php
-// ❌ transfer.php — aucune vérification d'origine
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $to     = $_POST['to_iban'];
-    $amount = $_POST['amount'];
-    // → virement exécuté sans vérifier si la requête vient bien du site
-}
+```
+Alice sur evil.attacker.lab
+    │
+    │ clique "Confirmer mon cashback"
+    │
+    ▼
+navigateur envoie :
+GET http://vuln.bank.local:8080/transfer.php?to_iban=...&amount=500
+Cookie: PHPSESSID=<session d'Alice>   ← envoyé automatiquement par le navigateur
+    │
+    ▼
+Serveur : session valide, pas de token CSRF à vérifier → virement exécuté
 ```
 
 ---
 
-### Étape 1 — Alice est connectée, récupérer son SID
+### Étape 1 — Alice est connectée sur vuln.bank.local
 
-Alice est connectée avec `ATTACKERfixedSID001` (depuis la Demo 1A ou 1B). Le SID est visible sur le dashboard.
+Dans la fenêtre d'Alice, connecte-toi avec `alice / Password123!`. Elle est sur son dashboard — **ne pas fermer cette fenêtre**.
 
 ---
 
-### Étape 2 — Mallory exécute un virement depuis son terminal
+### Étape 2 — Alice visite la page malveillante de Mallory
 
-Mallory n'est pas dans le navigateur d'Alice. Il utilise curl pour envoyer une requête cross-origin avec le cookie volé :
+Dans la **même fenêtre** (Alice est connectée), ouvre un nouvel onglet et va sur :
 
-```powershell
-curl -s -X POST "http://vuln.bank.local:8080/transfer.php" `
-  -H "Host: vuln.bank.local" `
-  -H "Cookie: PHPSESSID=ATTACKERfixedSID001" `
-  -d "to_iban=FR7630001007940000000000042&amount=500&note=CSRF demo"
+```
+http://evil.attacker.lab:8080/csrf-demo.html
 ```
 
-Le serveur exécute le virement — il ne vérifie pas que la requête vient du bon endroit.
+Alice voit une page qui ressemble à un email de sa banque lui annonçant un cashback de 10 €.
 
 ---
 
-### Étape 3 — Vérifier le virement en DB
+### Étape 3 — Alice clique le bouton
 
+Alice clique **"Confirmer la réception de mon cashback"**.
+
+Son navigateur envoie une requête GET vers `vuln.bank.local` **avec son cookie automatiquement** — elle est redirigée vers le dashboard de la banque.
+
+---
+
+### Étape 4 — Le virement a été exécuté
+
+Sur le dashboard d'Alice : **500 € ont disparu**. Elle n'a signé aucun formulaire, n'a entré aucun mot de passe, juste cliqué un lien.
+
+Vérification en DB :
 ```powershell
 docker exec p03-mysql mysql -uroot -prootpass -e "SELECT balance FROM bank_vuln.accounts WHERE user_id=1;"
 ```
 
-Le solde d'Alice a diminué de 500 € sans qu'elle ait rien fait.
-
 ---
 
-### Étape 4 — L'app sécurisée rejette la requête
+### Étape 5 — L'app sécurisée bloque l'attaque
 
-```powershell
-curl -s -X POST "http://secure.bank.local:8080/transfer.php" `
-  -H "Host: secure.bank.local" `
-  -H "Cookie: PHPSESSID=ATTACKERfixedSID001" `
-  -d "to_iban=FR7630001007940000000000042&amount=500&note=CSRF demo"
-```
-
-La requête est rejetée — le token CSRF manque dans le POST, le serveur refuse.
+Connecte Alice sur `secure.bank.local` et répète : clique le même lien depuis `csrf-demo.html`. Le serveur reçoit la requête GET mais `transfer.php` exige un token CSRF valide dans les paramètres — il rejette la requête et affiche une erreur.
 
 ---
 
