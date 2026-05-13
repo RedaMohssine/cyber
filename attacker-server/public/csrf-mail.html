@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CaptusBank — Alerte sécurité</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #f1f5f9;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        /* Navbar banque */
+        nav {
+            background: #0ea5e9;
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .nav-logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-logo span { color: #bae6fd; }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            font-size: 13px;
+            color: #bae6fd;
+        }
+
+        .nav-user {
+            font-size: 13px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-avatar {
+            width: 32px;
+            height: 32px;
+            background: #0284c7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: white;
+        }
+
+        /* Bandeau alerte */
+        .alert-top {
+            background: #fef2f2;
+            border-bottom: 2px solid #fca5a5;
+            padding: 14px 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #b91c1c;
+            font-weight: 600;
+        }
+
+        /* Contenu principal */
+        .main {
+            max-width: 780px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 6px;
+        }
+
+        .page-sub {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 32px;
+        }
+
+        /* Carte principale */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background: #fef2f2;
+            border-bottom: 1px solid #fecaca;
+            padding: 18px 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #b91c1c;
+        }
+
+        .card-header p {
+            font-size: 12px;
+            color: #ef4444;
+            margin-top: 2px;
+        }
+
+        .card-body { padding: 28px; }
+
+        /* Détails transaction */
+        .tx-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .tx-field {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 18px;
+        }
+
+        .tx-field .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .tx-field .value {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .tx-field .value.danger { color: #ef4444; font-size: 18px; }
+
+        /* Message */
+        .message {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+
+        /* Boutons */
+        .actions {
+            display: flex;
+            gap: 14px;
+        }
+
+        .btn-danger {
+            flex: 1;
+            display: block;
+            text-align: center;
+            background: #ef4444;
+            color: white;
+            text-decoration: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+        }
+
+        .btn-secondary {
+            flex: 1;
+            display: block;
+            text-align: center;
+            background: white;
+            color: #64748b;
+            text-decoration: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Info IBAN masqué */
+        .iban-badge {
+            display: inline-block;
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* Timer */
+        .timer-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            padding: 20px 28px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .timer-icon { font-size: 28px; }
+
+        .timer-text { font-size: 13px; color: #64748b; }
+        .timer-text strong { color: #ef4444; }
+
+        /* Footer */
+        footer {
+            margin-top: 48px;
+            background: #1e293b;
+            padding: 24px 40px;
+            font-size: 12px;
+            color: #64748b;
+            text-align: center;
+            line-height: 2;
+        }
+
+        footer a { color: #94a3b8; text-decoration: none; }
+
+        /* Badge peda */
+        .demo-badge {
+            text-align: center;
+            margin: 16px auto;
+            font-size: 11px;
+            color: #94a3b8;
+            background: #fef9c3;
+            border: 1px dashed #fde047;
+            border-radius: 6px;
+            padding: 8px 16px;
+            max-width: 780px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav>
+    <div class="nav-logo">Captus<span>Bank</span></div>
+    <div class="nav-links">
+        <span>Comptes</span>
+        <span>Virements</span>
+        <span>Épargne</span>
+        <span>Aide</span>
+    </div>
+    <div class="nav-user">
+        <div class="nav-avatar">A</div>
+        Alice Martin
+    </div>
+</nav>
+
+<!-- Bandeau alerte -->
+<div class="alert-top">
+    🔴 &nbsp; ACTION REQUISE — Nous avons suspendu une opération suspecte sur votre compte
+</div>
+
+<!-- Contenu -->
+<div class="main">
+
+    <div class="page-title">Alerte sécurité</div>
+    <div class="page-sub">Référence dossier : SEC-2026-0513-7741 · Détectée le 13/05/2026 à 09:44</div>
+
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h2>🚨 Tentative de virement non reconnue</h2>
+                <p>Cette opération a été bloquée automatiquement — votre confirmation est requise</p>
+            </div>
+        </div>
+        <div class="card-body">
+
+            <div class="tx-grid">
+                <div class="tx-field">
+                    <div class="label">Montant</div>
+                    <div class="value danger">- 500,00 €</div>
+                </div>
+                <div class="tx-field">
+                    <div class="label">IBAN destinataire</div>
+                    <div class="value"><span class="iban-badge">FR76 •••• •••• 0042</span></div>
+                </div>
+                <div class="tx-field">
+                    <div class="label">Date et heure</div>
+                    <div class="value">13/05/2026 — 09:44</div>
+                </div>
+                <div class="tx-field">
+                    <div class="label">Origine de la requête</div>
+                    <div class="value">IP inconnue — 🇷🇺 Russie</div>
+                </div>
+            </div>
+
+            <p class="message">
+                Notre système de détection de fraude a identifié cette opération comme suspecte.
+                Si vous êtes à l'origine de ce virement, confirmez-le ci-dessous pour le valider.
+                <strong>Si ce n'est pas vous</strong>, cliquez sur "Bloquer et sécuriser" pour
+                annuler l'opération et verrouiller votre compte immédiatement.
+            </p>
+
+            <div class="actions">
+                <!--
+                    CSRF : "Bloquer et sécuriser" pointe en réalité vers transfer.php.
+                    Alice croit annuler une fraude — elle déclenche le virement.
+                -->
+                <a class="btn-danger"
+                   href="http://vuln.bank.local:8080/transfer.php?to_iban=FR7630001007940000000000042&amount=500&note=Securisation+compte">
+                    🔒 Bloquer et sécuriser mon compte
+                </a>
+                <a class="btn-secondary" href="#">
+                    Oui, c'est moi — Confirmer le virement
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="timer-card">
+        <div class="timer-icon">⏱️</div>
+        <div class="timer-text">
+            Sans action de votre part, votre compte sera automatiquement bloqué dans
+            <strong>23:47:12</strong>. Contactez-nous au <strong>0 800 123 456</strong> (gratuit, 24h/24).
+        </div>
+    </div>
+
+</div>
+
+<div class="demo-badge">
+    Démonstration pédagogique — P03 Ethical Hacking · "Bloquer et sécuriser" déclenche en réalité un virement CSRF de 500 €
+</div>
+
+<footer>
+    © 2026 CaptusBank S.A. — 12 rue de la Finance, 75001 Paris<br>
+    <a href="#">Mentions légales</a> · <a href="#">Confidentialité</a> · <a href="#">Sécurité</a>
+</footer>
+
+</body>
+</html>

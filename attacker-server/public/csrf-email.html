@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Boîte de réception — alice.martin@captus.example</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #e2e8f0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            padding: 24px;
+            color: #1e293b;
+        }
+
+        /* Simulateur de client mail */
+        .client {
+            max-width: 860px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+
+        /* Barre du haut */
+        .client-bar {
+            background: #1e293b;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .client-bar .app-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #94a3b8;
+            letter-spacing: 1px;
+        }
+
+        .client-bar .controls {
+            display: flex;
+            gap: 7px;
+        }
+
+        .dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot.red    { background: #ef4444; }
+        .dot.yellow { background: #f59e0b; }
+        .dot.green  { background: #22c55e; }
+
+        /* Layout sidebar + mail */
+        .client-body {
+            display: flex;
+            min-height: 520px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            padding: 16px 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-item {
+            padding: 8px 20px;
+            font-size: 13px;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-item.active {
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 600;
+            border-right: 3px solid #1d4ed8;
+        }
+
+        .badge {
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 10px;
+        }
+
+        /* Panneau mail */
+        .mail-panel {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Barre d'outils */
+        .toolbar {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 10px 20px;
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .tool-btn {
+            padding: 4px 10px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* En-tête du mail */
+        .mail-head {
+            padding: 20px 28px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .mail-subject {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 14px;
+        }
+
+        .mail-from {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .from-details { font-size: 13px; }
+        .from-name { font-weight: 600; color: #1e293b; }
+        .from-email { color: #64748b; }
+        .mail-date { margin-left: auto; font-size: 12px; color: #94a3b8; }
+
+        .mail-to {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-left: 50px;
+        }
+
+        /* Corps du mail */
+        .mail-content {
+            padding: 28px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #374151;
+        }
+
+        /* Bandeau banque dans le mail */
+        .bank-strip {
+            background: linear-gradient(135deg, #0ea5e9, #0369a1);
+            border-radius: 8px 8px 0 0;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0;
+        }
+
+        .bank-name {
+            font-size: 20px;
+            font-weight: 800;
+            color: white;
+        }
+
+        .bank-name span { color: #bae6fd; }
+
+        .mail-box {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 16px 0 24px;
+        }
+
+        .mail-inner {
+            padding: 24px;
+            background: white;
+        }
+
+        .alert-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            padding: 14px 18px;
+            margin: 20px 0;
+            font-size: 13px;
+            color: #b91c1c;
+        }
+
+        .cta-center { text-align: center; margin: 24px 0 16px; }
+
+        .cta-btn {
+            display: inline-block;
+            background: #ef4444;
+            color: white;
+            text-decoration: none;
+            padding: 14px 36px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            box-shadow: 0 4px 14px rgba(239,68,68,0.3);
+        }
+
+        .cta-sub {
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        .mail-footer-inner {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 14px 24px;
+            font-size: 11px;
+            color: #94a3b8;
+            line-height: 1.8;
+        }
+
+        /* Badge peda */
+        .demo-badge {
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+            background: #fef9c3;
+            border-top: 1px dashed #fde047;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="client">
+
+    <!-- Barre titre simulateur mail -->
+    <div class="client-bar">
+        <span class="app-name">MAIL — alice.martin@captus.example</span>
+        <div class="controls">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+        </div>
+    </div>
+
+    <div class="client-body">
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-item active">
+                📥 Boîte de réception <span class="badge">1</span>
+            </div>
+            <div class="sidebar-item">⭐ Favoris</div>
+            <div class="sidebar-item">📤 Envoyés</div>
+            <div class="sidebar-item">🗑️ Corbeille</div>
+            <div class="sidebar-item">⚠️ Spam</div>
+        </div>
+
+        <!-- Panneau mail -->
+        <div class="mail-panel">
+
+            <div class="toolbar">
+                <span class="tool-btn">← Retour</span>
+                <span class="tool-btn">🗑 Supprimer</span>
+                <span class="tool-btn">⚠️ Signaler</span>
+                <span class="tool-btn">↩ Répondre</span>
+            </div>
+
+            <div class="mail-head">
+                <div class="mail-subject">⚠️ Activité inhabituelle détectée — Action requise</div>
+                <div class="mail-from">
+                    <div class="avatar">C</div>
+                    <div class="from-details">
+                        <div class="from-name">CaptusBank Sécurité</div>
+                        <div class="from-email">securite@captusbank.com</div>
+                    </div>
+                    <div class="mail-date">Aujourd'hui, 09:47</div>
+                </div>
+                <div class="mail-to">À : alice.martin@captus.example</div>
+            </div>
+
+            <!-- Corps du mail -->
+            <div class="mail-content">
+
+                <div class="mail-box">
+                    <div class="bank-strip">
+                        <div class="bank-name">Captus<span>Bank</span></div>
+                    </div>
+                    <div class="mail-inner">
+
+                        <p>Bonjour <strong>Alice Martin</strong>,</p><br>
+
+                        <p>Notre système de surveillance automatique a détecté une tentative de virement
+                        suspecte depuis votre compte. Par mesure de sécurité, cette opération
+                        a été <strong>temporairement bloquée</strong>.</p>
+
+                        <div class="alert-box">
+                            🚨 Virement de <strong>500,00 €</strong> vers un IBAN non reconnu —
+                            origine : adresse IP étrangère
+                        </div>
+
+                        <p>Si vous n'êtes pas à l'origine de cette opération, cliquez immédiatement
+                        sur le bouton ci-dessous pour bloquer votre compte et sécuriser vos fonds.</p>
+
+                        <div class="cta-center">
+                            <!--
+                                Le lien pointe vers la fausse page de sécurité CaptusBank
+                                hébergée sur evil.attacker.lab (la "vraie" attaque CSRF
+                                se déclenche quand Alice clique le bouton sur cette page).
+                            -->
+                            <a class="cta-btn"
+                               href="http://evil.attacker.lab:8080/csrf-mail.html">
+                                🔒 Sécuriser mon compte maintenant
+                            </a>
+                        </div>
+                        <div class="cta-sub">
+                            Vous serez redirigé vers l'espace sécurité CaptusBank
+                        </div>
+
+                        <p style="margin-top:20px">
+                            Si vous êtes bien à l'origine de ce virement, ignorez cet email.
+                            L'opération sera validée automatiquement dans 24 heures.<br><br>
+                            Cordialement,<br>
+                            <strong>Le service sécurité CaptusBank</strong>
+                        </p>
+
+                    </div>
+                    <div class="mail-footer-inner">
+                        © 2026 CaptusBank S.A. — 12 rue de la Finance, 75001 Paris<br>
+                        Cet email a été envoyé à alice.martin@captus.example · Ne pas répondre
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="demo-badge">
+                Démonstration pédagogique — le lien dans cet email pointe vers evil.attacker.lab/csrf-mail.html · Attaque CSRF en deux étapes
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
