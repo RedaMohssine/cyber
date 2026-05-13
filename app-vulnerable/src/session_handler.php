@@ -61,3 +61,10 @@ session_set_save_handler(new DbSessionHandler(), true);
 // session.use_trans_sid = 1    → on accepte le SID via URL (?PHPSESSID=...)
 // Aucun session_regenerate_id() après authentification (voir login.php)
 session_start();
+
+// PHP ne set pas automatiquement le cookie quand le SID arrive via URL (trans-sid).
+// On le force ici pour que les redirections (Location: /dashboard.php) conservent la session.
+// VULNÉRABILITÉ : on accepte sans vérification le SID imposé par le client.
+if (!isset($_COOKIE[session_name()])) {
+    setcookie(session_name(), session_id(), ['path' => '/']);
+}
