@@ -1,6 +1,3 @@
--- =====================================================================
---  CaptusBank — Schéma version VULNÉRABLE
--- =====================================================================
 CREATE DATABASE IF NOT EXISTS bank_vuln CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE bank_vuln;
 
@@ -29,8 +26,6 @@ CREATE TABLE accounts (
     FOREIGN KEY (user_id) REFERENCES users(id)
 ) ENGINE=InnoDB;
 
--- IMPORTANT : table sessions persistée pour la démonstration BDD
--- (utilisée par session_set_save_handler côté PHP)
 CREATE TABLE sessions (
     sid          VARCHAR(128) PRIMARY KEY,
     user_id      INT NULL,
@@ -42,7 +37,6 @@ CREATE TABLE sessions (
     FOREIGN KEY (user_id) REFERENCES users(id)
 ) ENGINE=InnoDB;
 
--- XSS stocké : commentaires NON échappés dans la version vulnérable
 CREATE TABLE comments (
     id           INT AUTO_INCREMENT PRIMARY KEY,
     user_id      INT NOT NULL,
@@ -61,11 +55,11 @@ CREATE TABLE transfers (
     FOREIGN KEY (from_account) REFERENCES accounts(id)
 ) ENGINE=InnoDB;
 
--- Comptes (mots de passe en clair pour la démo - simule un autre défaut classique)
+-- Mots de passe en clair (vulnérabilité intentionnelle de démo)
 INSERT INTO users (username, password, email, full_name, role) VALUES
-    ('alice',          'Password123!', 'alice@captus.example',  'Alice Martin',      'user'),
-    ('bob',            'BobPass456!',  'bob@captus.example',    'Bob Durand',        'user'),
-    ('mallory',        'EvilPass1!',   'mallory@evil.lab',      'Mallory (attacker)','user'),
+    ('alice',          'Password123!', 'alice@captus.example',  'Alice Martin',         'user'),
+    ('bob',            'BobPass456!',  'bob@captus.example',    'Bob Durand',           'user'),
+    ('mallory',        'EvilPass1!',   'mallory@evil.lab',      'Mallory (attacker)',   'user'),
     ('admin_honeypot', 'D0_n0t_use!',  'noreply@captus.example','HONEYPOT - DO NOT USE','honeypot');
 
 INSERT INTO accounts (user_id, iban, balance) VALUES

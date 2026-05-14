@@ -1,5 +1,4 @@
 <?php
-// app-secure/public/login.php
 require_once __DIR__ . '/../src/session_handler.php';
 require_once __DIR__ . '/../src/db.php';
 require_once __DIR__ . '/../src/layout.php';
@@ -20,15 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password_hash'])) {
-        // === CONTRE-MESURE PRINCIPALE ===
-        // Régénération du SID avec suppression de l'ancien.
-        // Empêche la fixation : tout SID pré-auth devient invalide ici.
         $oldSid = session_id();
-        session_regenerate_id(true);
+        session_regenerate_id(true); // Contre-mesure principale : invalide le SID pré-auth
         audit('login_success', 'info', (int)$user['id'], session_id(), [
-            'username'   => $user['username'],
-            'old_sid'    => substr($oldSid, 0, 8) . '...',
-            'new_sid'    => substr(session_id(), 0, 8) . '...',
+            'username' => $user['username'],
+            'old_sid'  => substr($oldSid, 0, 8) . '...',
+            'new_sid'  => substr(session_id(), 0, 8) . '...',
         ]);
 
         $_SESSION['user_id']      = (int)$user['id'];

@@ -1,7 +1,5 @@
 <?php
-// app-vulnerable/public/comments.php
-// XSS STOCKÉ : les commentaires sont restitués sans échappement.
-// C'est le vecteur principal pour injecter un payload qui fixe le SID de la victime.
+// VULN: commentaires restitués sans échappement → XSS stocké
 require_once __DIR__ . '/../src/session_handler.php';
 require_once __DIR__ . '/../src/db.php';
 require_once __DIR__ . '/../src/layout.php';
@@ -40,10 +38,9 @@ render_header('Communauté');
         <?php foreach ($rows as $r): ?>
             <li>
                 <header>
-                    <strong><?= /*VULN*/ $r['username'] ?></strong>
+                    <strong><?= $r['username'] ?></strong>
                     <time><?= $r['created_at'] ?></time>
                 </header>
-                <!-- VULN MAJEURE : pas d'échappement -->
                 <div class="body"><?= $r['content'] ?></div>
             </li>
         <?php endforeach; ?>

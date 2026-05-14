@@ -1,5 +1,4 @@
 <?php
-// app-vulnerable/public/index.php — page d'accueil
 require_once __DIR__ . '/../src/session_handler.php';
 require_once __DIR__ . '/../src/layout.php';
 

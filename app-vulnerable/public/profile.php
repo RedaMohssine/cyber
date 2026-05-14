@@ -1,5 +1,5 @@
 <?php
-// app-vulnerable/public/profile.php — page profil, affiche nom/email NON échappés
+// VULN: full_name et email affichés sans échappement → XSS stocké
 require_once __DIR__ . '/../src/session_handler.php';
 require_once __DIR__ . '/../src/db.php';
 require_once __DIR__ . '/../src/layout.php';
@@ -20,13 +20,13 @@ $user = $user->fetch();
 render_header('Profil');
 ?>
 <section class="profile">
-    <h2>Profil de <?= /*VULN*/ $user['full_name'] ?></h2>
-    <p>Email : <?= /*VULN*/ $user['email'] ?></p>
+    <h2>Profil de <?= $user['full_name'] ?></h2>
+    <p>Email : <?= $user['email'] ?></p>
     <p>Rôle : <?= $user['role'] ?></p>
 
     <form method="post">
         <label>Nom complet
-            <input type="text" name="full_name" value="<?= /*VULN*/ $user['full_name'] ?>">
+            <input type="text" name="full_name" value="<?= $user['full_name'] ?>">
         </label>
         <button class="btn primary">Mettre à jour</button>
     </form>

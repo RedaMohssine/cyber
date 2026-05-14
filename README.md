@@ -1,119 +1,108 @@
-# P03 — Session Fixation combinée à XSS
+# CaptusBank — P03 Session Fixation + XSS
 
-> Projet cybersécurité — **BLUE TEAM**
-> Démonstration d'une chaîne d'exploitation **Session Fixation + XSS** sur une application bancaire,
-> puis remédiation complète dans une version sécurisée jumelle.
-
-## Sommaire
-
-- [Vue d'ensemble](#vue-densemble)
-- [Architecture](#architecture)
-- [Démarrage rapide](#démarrage-rapide)
-- [Scénario d'attaque](#scénario-dattaque)
-- [Contre-mesures](#contre-mesures)
-- [Démonstration](#démonstration)
-- [Livrables](#livrables)
-
-## Vue d'ensemble
-
-Ce projet implémente deux versions jumelles d'une application bancaire (**CaptusBank**) :
-
-| Service | Port | Description |
-|---|---|---|
-| `app-vulnerable` | 8081 | Version volontairement vulnérable (XSS stocké/réfléchi, pas de régénération de session) |
-| `app-secure`     | 8082 | Version corrigée appliquant toutes les contre-mesures |
-| `attacker-server`| 8666 | Serveur de collecte de l'attaquant + dashboard temps réel des sessions volées |
-| `mysql`          | 3306 | Base partagée (schémas `bank_vuln` et `bank_secure`) |
-| `nginx`          | 80   | Reverse proxy unifiant les hostnames |
-
-Hostnames simulés (via `/etc/hosts`) :
-- `vuln.bank.local`    → app vulnérable
-- `secure.bank.local`  → app sécurisée
-- `evil.attacker.lab`  → infrastructure attaquant
+Projet pédagogique d'ethical hacking : démonstration d'une chaîne d'exploitation **Session Fixation + XSS + CSRF** sur une application bancaire, avec une version sécurisée jumelle pour comparer les contre-mesures.
 
 ## Architecture
 
+| Service | Hostname | Description |
+|---|---|---|
+| `app-vulnerable` | `vuln.bank.local` | Version volontairement vulnérable |
+| `app-secure` | `secure.bank.local` | Version corrigée (contre-mesures appliquées) |
+| `attacker-server` | `evil.attacker.lab` | C2 attaquant : dashboard + collecteur de sessions |
+| `nginx` | proxy sur `:8080` | Reverse proxy routant par Host header |
+| `mysql` | interne | BDD partagée (`bank_vuln` + `bank_secure`) |
+
 ```
-                  ┌─────────────────────┐
-                  │   Nginx reverse     │
-                  │       proxy         │
-                  └──────────┬──────────┘
-                             │
-        ┌────────────────────┼────────────────────┐
-        ▼                    ▼                    ▼
- ┌────────────┐       ┌────────────┐       ┌────────────┐
- │  app-vuln  │       │ app-secure │       │  attacker  │
- │  (PHP 8.2) │       │  (PHP 8.2) │       │  (PHP 8.2) │
- └─────┬──────┘       └─────┬──────┘       └─────┬──────┘
-       │                    │                    │
-       └────────┬───────────┘                    │
-                ▼                                ▼
-        ┌──────────────┐                ┌──────────────┐
-        │    MySQL     │                │  SQLite      │
-        │ (bank data)  │                │  (stolen     │
-        └──────────────┘                │   sessions)  │
-                                        └──────────────┘
+                ┌──────────────────┐
+                │   Nginx :8080    │
+                └────────┬─────────┘
+         ┌───────────────┼──────────────┐
+         ▼               ▼              ▼
+   app-vulnerable   app-secure    attacker-server
+      (PHP 8.2)      (PHP 8.2)      (PHP 8.2)
+         │               │              │
+         └───────┬────────┘             │
+                 ▼                      ▼
+             MySQL                   SQLite
+           (bank data)          (stolen sessions)
 ```
 
-## Démarrage rapide
+## Prérequis
+
+- Docker + Docker Compose
+- Accès administrateur (pour modifier `/etc/hosts`)
+
+## Installation
+
+### 1. Configurer les hostnames
+
+**Linux / macOS :**
+```bash
+echo "127.0.0.1 vuln.bank.local secure.bank.local evil.attacker.lab" | sudo tee -a /etc/hosts
+```
+
+**Windows (PowerShell en tant qu'administrateur) :**
+```powershell
+Add-Content -Path "C:\Windows\System32\drivers\etc\hosts" -Value "127.0.0.1 vuln.bank.local"
+Add-Content -Path "C:\Windows\System32\drivers\etc\hosts" -Value "127.0.0.1 secure.bank.local"
+Add-Content -Path "C:\Windows\System32\drivers\etc\hosts" -Value "127.0.0.1 evil.attacker.lab"
+```
+
+### 2. Lancer la stack
 
 ```bash
-# Ajout des hostnames locaux
-sudo bash scripts/setup-hosts.sh
-
-# Lancement de la stack complète
 docker compose up --build -d
-
-# Vérification
-curl -I http://vuln.bank.local
-curl -I http://secure.bank.local
-curl -I http://evil.attacker.lab
 ```
 
-Comptes de test :
-- **Victime** : `alice` / `Password123!` (solde 12 450 €)
-- **Attaquant**: `mallory` / `EvilPass1!`
-- **Autre user** : `bob` / `BobPass456!`
+Attendre ~15 secondes que MySQL initialise les deux schémas, puis vérifier :
+```bash
+curl -I http://vuln.bank.local:8080
+curl -I http://secure.bank.local:8080
+curl -I http://evil.attacker.lab:8080
+```
 
-## Scénario d'attaque
+### 3. Comptes de test
 
-Voir [docs/SCENARIO.md](docs/SCENARIO.md) pour le détail complet.
+| Rôle | Username | Password | Solde |
+|---|---|---|---|
+| Victime | `alice` | `Password123!` | 12 450 € |
+| Utilisateur | `bob` | `BobPass456!` | 3 200 € |
+| Attaquant | `mallory` | `EvilPass1!` | 5 € |
+| Honeypot | `admin_honeypot` | `D0_n0t_use!` | — |
 
-Résumé en 5 phases :
-1. **Reconnaissance** — Mallory identifie l'absence de régénération de session ID
-2. **Préparation** — Mallory obtient un session ID valide pré-auth
-3. **Fixation** — Injection du cookie chez la victime via 3 vecteurs (URL / XSS stocké / sous-domaine)
-4. **Phishing** — Email piégé envoyé à Alice
-5. **Hijacking** — Une fois Alice connectée, Mallory utilise le même ID et vide le compte
+## Réinitialiser les données
 
-## Contre-mesures
+```bash
+docker compose down -v
+docker compose up --build -d
+```
 
-Voir [docs/REMEDIATION.md](docs/REMEDIATION.md). Liste résumée :
+## Reproduire les attaques
 
-- `session_regenerate_id(true)` après login, logout, élévation de privilège
-- Cookies `HttpOnly` + `Secure` + `SameSite=Strict`
-- CSP stricte (`script-src 'self'; object-src 'none'; base-uri 'self'`)
-- Échappement contextuel (`htmlspecialchars` avec ENT_QUOTES)
-- Binding session ↔ User-Agent + IP /24
-- Rotation périodique du SID (toutes les 5 min)
-- Logging structuré des anomalies (deux IPs sur un SID → alerte SIEM)
-- Token CSRF sur toutes les mutations
-- Honeytoken (compte `admin_honeypot` jamais légitimement utilisé)
+Voir **[docs/GUIDE-COMPLET.md](docs/GUIDE-COMPLET.md)** pour les instructions détaillées de chaque démonstration.
 
-## Démonstration
+### Vue d'ensemble des démonstrations
 
-Preuve attendue :
-1. Ouverture de la BDD MySQL → table `sessions` → **un seul SID partagé** par Alice et Mallory
-2. Capture Wireshark → cookie identique côté attaquant et victime
-3. Dashboard attaquant → affichage temps réel du SID volé
-4. Tentative sur l'app sécurisée → l'attaque échoue, alerte loguée
+| # | Attaque | Vecteur | Impact |
+|---|---|---|---|
+| 1A | Session Fixation | URL phishing (`?PHPSESSID=`) | Hijack de session |
+| 1B | Session Fixation | XSS stocké (commentaire) | Hijack sans phishing URL |
+| 2 | XSS Stocké | Commentaire → alerte JS | Preuve d'exécution JS |
+| 3 | XSS Stocké → vol de cookie | `document.cookie` → beacon | Cookie exfiltré dans dashboard attaquant |
+| 4 | XSS Stocké → virement | `fetch('/transfer.php?...')` | 500 € débités depuis le compte victime |
+| 5 | XSS Réfléchi | `?msg=<script>` en URL | Exécution JS via lien |
+| 6 | XSS Stocké → profil | Payload dans `full_name` | Persistance XSS dans la page Profil |
+| 7 | CSRF | Email phishing → fausse page banque → GET transfer | Virement sans interaction JS |
 
-## Livrables
+### Script d'automatisation
 
-- [docs/RAPPORT.md](docs/RAPPORT.md) — Rapport style pentest (executive summary, CVSS, OWASP/CWE, remédiation)
-- [docs/SCENARIO.md](docs/SCENARIO.md) — Scénario d'attaque détaillé
-- [docs/THREAT-MODEL.md](docs/THREAT-MODEL.md) — Threat modeling STRIDE
-- [docs/REMEDIATION.md](docs/REMEDIATION.md) — Contre-mesures détaillées
-- [scripts/attack.py](scripts/attack.py) — Script Python automatisant l'attaque
-- [tests/](tests/) — Tests pytest validant vuln + sécurisée
-- [siem/](siem/) — Règles Sigma de détection
+```bash
+pip install -r scripts/requirements.txt
+python scripts/attack.py --base http://localhost:8080 --target vuln
+```
+
+## Arrêter
+
+```bash
+docker compose down
+```

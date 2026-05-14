@@ -1,13 +1,4 @@
 <?php
-// app-secure/src/session_handler.php
-// =====================================================================
-//  Gestionnaire de session DURCI
-//   - use_strict_mode + use_only_cookies + HttpOnly + SameSite=Strict
-//   - Persistance BDD avec fingerprint + IP + UA-hash
-//   - Régénération du SID après login/logout/élévation
-//   - Rotation périodique (toutes les 5 min) en session authentifiée
-//   - Détection de SID partagé (2 fingerprints distincts) -> audit critical
-// =====================================================================
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/security.php';
 
@@ -20,6 +11,7 @@ class SecureDbSessionHandler implements SessionHandlerInterface, SessionUpdateTi
         $stmt->execute([':sid' => $sid]);
         return (bool)$stmt->fetchColumn();
     }
+
     public function updateTimestamp($sid, $data): bool { return $this->write($sid, $data); }
 
     public function read($sid): string {
@@ -28,7 +20,7 @@ class SecureDbSessionHandler implements SessionHandlerInterface, SessionUpdateTi
         $row = $stmt->fetch();
         if (!$row) return '';
 
-        // BINDING : si l'empreinte change et la session est authentifiée -> on tue + audit
+        // Détection de SID partagé : fingerprint divergent sur une session authentifiée → kill + audit
         if (!empty($row['user_id']) && $row['fingerprint']
             && !hash_equals($row['fingerprint'], request_fingerprint())) {
             audit('session_fingerprint_mismatch', 'critical', (int)$row['user_id'], $sid, [
@@ -84,7 +76,7 @@ session_set_cookie_params([
     'lifetime' => 0,
     'path'     => '/',
     'domain'   => '',
-    'secure'   => false,        // mettre à true derrière TLS
+    'secure'   => false, // mettre true derrière TLS
     'httponly' => true,
     'samesite' => 'Strict',
 ]);
@@ -92,14 +84,10 @@ session_set_cookie_params([
 session_start();
 security_headers();
 
-/**
- * Rotation périodique du SID en session authentifiée (toutes les 5 min).
- * Atténue le risque d'un SID compromis indétecté.
- */
+// Rotation périodique du SID toutes les 5 min (atténue le risque d'un SID compromis indétecté)
 if (!empty($_SESSION['user_id'])) {
     $now = time();
-    $rotateEvery = 300;
-    if (empty($_SESSION['_last_rotate']) || $now - $_SESSION['_last_rotate'] > $rotateEvery) {
+    if (empty($_SESSION['_last_rotate']) || $now - $_SESSION['_last_rotate'] > 300) {
         $oldSid = session_id();
         session_regenerate_id(true);
         $_SESSION['_last_rotate'] = $now;

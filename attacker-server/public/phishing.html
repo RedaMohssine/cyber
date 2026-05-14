@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>CaptusBank - Notification de sécurité importante</title>
+    <title>CaptusBank - Notification de sécurité</title>
     <link rel="stylesheet" href="/style.css">
     <style>
         body { background: #f8fafc; color: #1e293b; font-family: 'Inter', sans-serif; }
@@ -20,15 +20,15 @@
     <p>Nous avons détecté une activité inhabituelle sur votre compte. Pour garantir la sécurité de vos données,
        veuillez vous reconnecter à votre espace client via le lien ci-dessous.</p>
 
-    <a class="cta" href="http://vuln.bank.local/login.php?PHPSESSID=ATTACKER_FIXED_SID_001">
+    <a class="cta" href="http://vuln.bank.local:8080/login.php?PHPSESSID=ATTACKERfixedSID001">
         Vérifier mon compte maintenant
     </a>
 
     <p>Cordialement,<br>Le service sécurité CaptusBank</p>
 
     <div class="fineprint">
-        Page de démonstration pédagogique — projet P03 (BLUE TEAM).
-        Cet email simule un phishing typique pour démontrer la fixation de session via URL.
+        Démonstration pédagogique — P03 Ethical Hacking.<br>
+        Ce lien contient un SID imposé par l'attaquant (fixation de session via URL).
     </div>
 </div>
 </body>

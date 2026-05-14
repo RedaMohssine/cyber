@@ -1,6 +1,4 @@
 <?php
-// app-vulnerable/src/layout.php — header/footer partagés
-
 function render_header(string $title = 'CaptusBank'): void {
     $user = $_SESSION['username'] ?? null;
     ?>
@@ -8,9 +6,8 @@ function render_header(string $title = 'CaptusBank'): void {
     <html lang="fr">
     <head>
         <meta charset="utf-8">
-        <title><?= $title /* VULN: pas d'échappement */ ?></title>
+        <title><?= $title ?></title>
         <link rel="stylesheet" href="/assets/style.css">
-        <!-- VULN : aucune CSP -->
     </head>
     <body>
     <header class="topbar">
@@ -25,7 +22,7 @@ function render_header(string $title = 'CaptusBank'): void {
                 <a href="/transfer.php">Virement</a>
                 <a href="/comments.php">Communauté</a>
                 <a href="/profile.php">Profil</a>
-                <span class="who">connecté en tant que <?= /*VULN*/ $user ?></span>
+                <span class="who">connecté en tant que <?= $user ?></span>
                 <a href="/logout.php">Déconnexion</a>
             <?php else: ?>
                 <a href="/login.php">Connexion</a>

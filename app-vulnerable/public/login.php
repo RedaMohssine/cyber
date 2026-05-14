@@ -1,12 +1,5 @@
 <?php
-// app-vulnerable/public/login.php
-// ===========================================================
-//  VULNÉRABILITÉ : aucune régénération de session après login
-//  Le SID présent avant l'authentification reste valide après.
-//  Si un attaquant a réussi à imposer ce SID à la victime
-//  (via XSS, paramètre URL, cookie injecté), il hérite de la session.
-// ===========================================================
-
+// VULN: aucun session_regenerate_id() après login → le SID pré-auth reste valide
 require_once __DIR__ . '/../src/session_handler.php';
 require_once __DIR__ . '/../src/db.php';
 require_once __DIR__ . '/../src/layout.php';
@@ -21,19 +14,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute([':u' => $username]);
     $user = $stmt->fetch();
 
-    // Mots de passe en clair — défaut intentionnel pour la démo
     if ($user && hash_equals($user['password'], $password)) {
-        // ======================================================
-        //  BUG CRITIQUE : on ne régénère PAS le session ID ici.
-        //  Il faudrait : session_regenerate_id(true);
-        //  Conséquence : le SID pré-auth devient un SID authentifié.
-        // ======================================================
+        // VULN: il manque session_regenerate_id(true) ici
         $_SESSION['user_id']   = (int)$user['id'];
         $_SESSION['username']  = $user['username'];
         $_SESSION['role']      = $user['role'];
         $_SESSION['logged_at'] = time();
 
-        // Honeypot : si quelqu'un se connecte avec admin_honeypot, on log fort
         if ($user['role'] === 'honeypot') {
             error_log("[HONEYPOT TRIGGERED] sid={$_COOKIE['PHPSESSID']} ip={$_SERVER['REMOTE_ADDR']}");
         }
@@ -51,12 +38,11 @@ render_header('Connexion');
     <h2>Connexion à votre espace</h2>
 
     <?php if ($error): ?>
-        <!-- VULN : XSS réfléchie via le paramètre ?msg= -->
         <div class="error"><?= $error ?></div>
     <?php endif; ?>
 
     <?php if (isset($_GET['msg'])): ?>
-        <!-- VULN: paramètre ?msg= injecté tel quel pour démontrer XSS réfléchie -->
+        <!-- VULN: XSS réfléchie — paramètre ?msg= non échappé -->
         <div class="notice"><?= $_GET['msg'] ?></div>
     <?php endif; ?>
 

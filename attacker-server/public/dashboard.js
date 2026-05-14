@@ -1,4 +1,3 @@
-// attacker-server/public/dashboard.js — polling temps réel
 (function () {
     const tbody = document.getElementById('rows');
     const cnt   = document.getElementById('count');

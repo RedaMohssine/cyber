@@ -1,5 +1,4 @@
 <?php
-// attacker-server/public/api.php — JSON pour le dashboard SPA
 require_once __DIR__ . '/db.php';
 
 header('Content-Type: application/json');

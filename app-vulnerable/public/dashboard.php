@@ -1,5 +1,5 @@
 <?php
-// app-vulnerable/public/dashboard.php
+// VULN: username, iban, note non échappés
 require_once __DIR__ . '/../src/session_handler.php';
 require_once __DIR__ . '/../src/db.php';
 require_once __DIR__ . '/../src/layout.php';
@@ -23,10 +23,10 @@ $txs = $txs->fetchAll();
 render_header('Tableau de bord');
 ?>
 <section class="dashboard">
-    <h2>Bonjour <?= /*VULN*/ $_SESSION['username'] ?>,</h2>
+    <h2>Bonjour <?= $_SESSION['username'] ?>,</h2>
 
     <div class="account-card">
-        <div class="iban">IBAN <code><?= /*VULN*/ $account['iban'] ?></code></div>
+        <div class="iban">IBAN <code><?= $account['iban'] ?></code></div>
         <div class="balance">
             <span class="amount"><?= number_format($account['balance'], 2, ',', ' ') ?> €</span>
             <span class="label">Solde disponible</span>
@@ -40,11 +40,10 @@ render_header('Tableau de bord');
         <?php foreach ($txs as $tx): ?>
             <tr>
                 <td><?= $tx['created_at'] ?></td>
-                <td><code><?= /*VULN*/ $tx['to_iban'] ?></code></td>
+                <td><code><?= $tx['to_iban'] ?></code></td>
                 <td style="color:<?= $tx['direction']==='in' ? 'green' : 'red' ?>">
                     <?= $tx['direction']==='in' ? '+' : '-' ?><?= number_format($tx['amount'], 2, ',', ' ') ?> €
                 </td>
-                <!-- VULN majeure : note de virement non échappée -->
                 <td><?= $tx['note'] ?></td>
             </tr>
         <?php endforeach; ?>
