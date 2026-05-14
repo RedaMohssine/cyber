@@ -871,30 +871,32 @@ En cas de fuite DB, les mots de passe en clair sont exploitables immédiatement.
 
 ---
 
-## DEMO 7 — CSRF (Cross-Site Request Forgery)
+## DEMO 7 — CSRF (Cross-Site Request Forgery) via email de phishing
 
 > **Faille démontrée** : `transfer.php` accepte les paramètres GET et n'a pas de token CSRF. Le **navigateur d'Alice** envoie automatiquement son cookie vers la banque quand elle clique un lien depuis evil.attacker.lab.
 >
-> **Pourquoi c'est du vrai CSRF** : c'est le navigateur d'Alice qui fait la requête — pas Mallory, pas un script injecté dans la banque. Alice est sur evil.attacker.lab et clique ce qu'elle croit être un bouton innocent.
+> **Scénario** : attaque en deux étapes — faux email CaptusBank → fausse page d'alerte sécurité → virement déclenché.
+>
+> **Pourquoi c'est du vrai CSRF** : c'est le navigateur d'Alice qui fait la requête, pas Mallory. Alice est sur evil.attacker.lab et croit bloquer une fraude — elle en déclenche une.
 
 ---
 
 ### Ce qui rend cette attaque possible
 
-`transfer.php` accepte les paramètres via GET (pas seulement POST) et n'a aucun token de vérification. Quand Alice clique un lien vers `vuln.bank.local/transfer.php?...`, son navigateur envoie automatiquement son cookie `PHPSESSID` — c'est le comportement normal des navigateurs pour les navigations GET.
+`transfer.php` accepte les paramètres via GET (pas seulement POST) et n'a aucun token de vérification. Quand Alice clique un lien vers `vuln.bank.local/transfer.php?...`, son navigateur envoie automatiquement son cookie `PHPSESSID` — comportement normal pour les navigations GET.
 
 ```
 Alice sur evil.attacker.lab
     │
-    │ clique "Confirmer mon cashback"
+    │ clique "Bloquer et sécuriser mon compte"
     │
     ▼
 navigateur envoie :
-GET http://vuln.bank.local:8080/transfer.php?to_iban=...&amount=500
-Cookie: PHPSESSID=<session d'Alice>   ← envoyé automatiquement par le navigateur
+GET http://vuln.bank.local:8080/transfer.php?to_iban=FR76...0042&amount=500
+Cookie: PHPSESSID=<session d'Alice>   ← envoyé automatiquement
     │
     ▼
-Serveur : session valide, pas de token CSRF à vérifier → virement exécuté
+Serveur : session valide, pas de token CSRF → virement exécuté
 ```
 
 ---
@@ -905,29 +907,55 @@ Dans la fenêtre d'Alice, connecte-toi avec `alice / Password123!`. Elle est sur
 
 ---
 
-### Étape 2 — Alice visite la page malveillante de Mallory
+### Étape 2 — Alice reçoit un "email" de sa banque
 
 Dans la **même fenêtre** (Alice est connectée), ouvre un nouvel onglet et va sur :
 
 ```
-http://evil.attacker.lab:8080/csrf-demo.html
+http://evil.attacker.lab:8080/csrf-email.html
 ```
 
-Alice voit une page qui ressemble à un email de sa banque lui annonçant un cashback de 10 €.
+Alice voit un simulateur de client mail affichant un email de **"CaptusBank Sécurité"** l'avertissant d'une tentative de virement suspecte de 500 €. L'email semble légitime (logo CaptusBank, mise en page professionnelle).
 
 ---
 
-### Étape 3 — Alice clique le bouton
+### Étape 3 — Alice clique le bouton dans l'email
 
-Alice clique **"Confirmer la réception de mon cashback"**.
+Alice clique **"Sécuriser mon compte maintenant"** (bouton rouge dans l'email).
 
-Son navigateur envoie une requête GET vers `vuln.bank.local` **avec son cookie automatiquement** — elle est redirigée vers le dashboard de la banque.
+Elle est redirigée vers :
+```
+http://evil.attacker.lab:8080/csrf-mail.html
+```
 
 ---
 
-### Étape 4 — Le virement a été exécuté
+### Étape 4 — Alice arrive sur la fausse page d'alerte CaptusBank
 
-Sur le dashboard d'Alice : **500 € ont disparu**. Elle n'a signé aucun formulaire, n'a entré aucun mot de passe, juste cliqué un lien.
+La page ressemble exactement à l'interface CaptusBank (navbar bleue, logo, nom "Alice Martin") et affiche les détails d'une "tentative de virement suspecte de 500 €" prétendument depuis une IP russe.
+
+Elle voit deux boutons :
+- **"Bloquer et sécuriser mon compte"** (rouge) ← le piège
+- "Oui, c'est moi — Confirmer le virement" (gris)
+
+---
+
+### Étape 5 — Alice clique "Bloquer et sécuriser"
+
+Alice clique le bouton rouge. Son navigateur envoie **avec son cookie automatiquement** :
+
+```
+GET http://vuln.bank.local:8080/transfer.php?to_iban=FR7630001007940000000000042&amount=500&note=Securisation+compte
+Cookie: PHPSESSID=<session d'Alice>
+```
+
+Elle est redirigée vers son dashboard bancaire.
+
+---
+
+### Étape 6 — Le virement a été exécuté
+
+Sur le dashboard d'Alice : **500 € ont disparu**. Elle croyait bloquer une fraude, elle en a déclenché une.
 
 Vérification en DB :
 ```powershell
@@ -936,9 +964,9 @@ docker exec p03-mysql mysql -uroot -prootpass -e "SELECT balance FROM bank_vuln.
 
 ---
 
-### Étape 5 — L'app sécurisée bloque l'attaque
+### Étape 7 — L'app sécurisée bloque l'attaque
 
-Connecte Alice sur `secure.bank.local` et répète : clique le même lien depuis `csrf-demo.html`. Le serveur reçoit la requête GET mais `transfer.php` exige un token CSRF valide dans les paramètres — il rejette la requête et affiche une erreur.
+Connecte Alice sur `secure.bank.local`, puis depuis la même page `csrf-mail.html`, change l'URL du bouton pour pointer vers `secure.bank.local` et clique. Le serveur exige un token CSRF valide dans les paramètres — il rejette la requête et affiche **"CSRF token invalide"**.
 
 ---
 
