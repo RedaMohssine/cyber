@@ -1,0 +1,7 @@
+# Outils Python optionnels pour interagir avec le projet
+
+# Requêtes HTTP (tests manuels, scripts d'attaque)
+requests>=2.31.0
+
+# Client MySQL (inspection BDD depuis l'hôte)
+mysql-connector-python>=8.3.0

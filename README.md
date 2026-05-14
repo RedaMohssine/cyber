@@ -31,6 +31,11 @@ Projet pédagogique d'ethical hacking : démonstration d'une chaîne d'exploitat
 
 - Docker + Docker Compose
 - Accès administrateur (pour modifier `/etc/hosts`)
+- Python 3.9+ (optionnel — pour les outils d'inspection)
+
+```bash
+pip install -r requirements.txt
+```
 
 ## Installation
 
@@ -93,13 +98,6 @@ Voir **[docs/GUIDE-COMPLET.md](docs/GUIDE-COMPLET.md)** pour les instructions d�
 | 5 | XSS Réfléchi | `?msg=<script>` en URL | Exécution JS via lien |
 | 6 | XSS Stocké → profil | Payload dans `full_name` | Persistance XSS dans la page Profil |
 | 7 | CSRF | Email phishing → fausse page banque → GET transfer | Virement sans interaction JS |
-
-### Script d'automatisation
-
-```bash
-pip install -r scripts/requirements.txt
-python scripts/attack.py --base http://localhost:8080 --target vuln
-```
 
 ## Arrêter
 
