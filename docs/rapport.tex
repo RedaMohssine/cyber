@@ -204,7 +204,7 @@
 \centering
 
 % ---- En-tête institution ----
-{\large\scshape Université — Cours d'Ethical Hacking}\\[0.3cm]
+{\large\scshape EMINES : School Of Industrial Management}\\[0.3cm]
 {\normalsize Projet P03}
 
 \vspace{1cm}
@@ -213,7 +213,7 @@
 \vspace{1.8cm}
 
 % ---- Titre principal ----
-{\LARGE\bfseries Rapport Technique}\\[0.6cm]
+{\LARGE\bfseries Rapport}\\[0.6cm]
 {\Large Session Fixation, Cross-Site Scripting}\\[0.2cm]
 {\Large et Cross-Site Request Forgery}\\[0.8cm]
 {\large\itshape Exploitation et contre-mesures sur une application bancaire}\\[0.3cm]
@@ -238,7 +238,7 @@
 % ---- Pied de page ----
 \begin{tabular}{@{}p{0.45\linewidth}p{0.45\linewidth}@{}}
   \textbf{Encadrant :} & \textbf{Année universitaire :} \\
-  Youssef Benaouda     & 2025 -- 2026 \\[6pt]
+  Youssef NOUR-EL AINE     & 2025 -- 2026 \\[6pt]
   \textbf{Date de remise :} & \textbf{Référence projet :} \\
   Mai 2026             & P03 -- Session Fixation \& XSS \\
 \end{tabular}
@@ -277,15 +277,15 @@ Le tableau suivant résume les vulnérabilités couvertes dans ce rapport :
 \small
 \begin{tabular}{@{}llll@{}}
 \toprule
-\textbf{\#} & \textbf{Vulnérabilité} & \textbf{OWASP Top 10} & \textbf{CWE} \\
+\textbf{\#} & \textbf{Vulnérabilité} & \textbf{Types} \\
 \midrule
-1 & Session Fixation & A07 — Identification Failures & CWE-384 \\
-2 & XSS Stocké & A03 — Injection & CWE-79 \\
-3 & XSS Réfléchi & A03 — Injection & CWE-79 \\
-4 & CSRF & A01 — Broken Access Control & CWE-352 \\
-5 & Mots de passe en clair & A02 — Cryptographic Failures & CWE-256 \\
-6 & Cookies non sécurisés & A05 — Security Misconfiguration & CWE-1004 \\
-7 & Information Disclosure & A05 — Security Misconfiguration & CWE-200 \\
+1 & Session Fixation &  Identification Failures \\
+2 & XSS Stocké &  Injection \\
+3 & XSS Réfléchi &  Injection \\
+4 & CSRF &  Broken Access Control \\
+5 & Mots de passe en clair & Cryptographic Failures  \\
+6 & Cookies non sécurisés & Security Misconfiguration \\
+7 & Information Disclosure & Security Misconfiguration  \\
 \bottomrule
 \end{tabular}
 \caption{Périmètre des vulnérabilités du projet P03}
@@ -320,7 +320,7 @@ Le projet est entièrement conteneurisé avec Docker Compose. Cinq services coex
 \midrule
 \texttt{app-vulnerable} & \texttt{vuln.bank.local} & 8080 & Application bancaire vulnérable (PHP 8.2) \\
 \texttt{app-secure} & \texttt{secure.bank.local} & 8080 & Version corrigée avec contre-mesures \\
-\texttt{attacker-server} & \texttt{evil.attacker.lab} & 8080 & C2 attaquant : dashboard + collecte de sessions \\
+\texttt{attacker-server} & \texttt{evil.attacker.lab} & 8080 & attaquant : dashboard + collecte de sessions \\
 \texttt{mysql} & interne & 3307 & Base MySQL partagée (\texttt{bank\_vuln} + \texttt{bank\_secure}) \\
 \texttt{nginx} & — & 8080 & Reverse proxy, routage par header \texttt{Host} \\
 \bottomrule
@@ -394,7 +394,7 @@ Profil & \file{/profile.php} & XSS stocké (\texttt{full\_name}) \\
 % ============================================================
 
 % -------- 3.1 SESSION FIXATION --------
-\section{Session Fixation — \cwe{384}}
+\section{Session Fixation}
 
 \subsection{Rappel théorique}
 
@@ -465,7 +465,7 @@ L'application sécurisée ajoute également une \textbf{rotation périodique} du
 \end{securebox}
 
 % -------- 3.2 XSS STOCKÉ --------
-\section{Cross-Site Scripting Stocké — \cwe{79}}
+\section{Cross-Site Scripting Stocké}
 
 \subsection{Principe}
 
@@ -527,7 +527,7 @@ Content-Security-Policy: script-src 'self'; object-src 'none'; base-uri 'self'
 \end{securebox}
 
 % -------- 3.3 XSS RÉFLÉCHI --------
-\section{Cross-Site Scripting Réfléchi — \cwe{79}}
+\section{Cross-Site Scripting Réfléchi}
 
 \subsection{Principe}
 
@@ -558,7 +558,7 @@ Un attaquant peut envoyer à la victime un lien tel que :
 \end{securebox}
 
 % -------- 3.4 CSRF --------
-\section{Cross-Site Request Forgery — \cwe{352}}
+\section{Cross-Site Request Forgery}
 
 \subsection{Principe}
 
@@ -621,7 +621,7 @@ De plus, le cookie utilise \texttt{SameSite=Strict}, bloquant tout envoi cross-o
 \end{securebox}
 
 % -------- 3.5 MOTS DE PASSE EN CLAIR --------
-\section{Stockage des mots de passe en clair — \cwe{256}}
+\section{Stockage des mots de passe en clair}
 
 \subsection{Vulnérabilité}
 
@@ -650,7 +650,7 @@ Chaque tentative de vérification prend ~200~ms. Un attaquant avec la base de do
 \end{securebox}
 
 % -------- 3.6 COOKIES --------
-\section{Cookies non sécurisés — \cwe{1004}}
+\section{Cookies non sécurisés}
 
 \subsection{Vulnérabilité}
 
@@ -677,7 +677,7 @@ session_set_cookie_params([
 \end{securebox}
 
 % -------- 3.7 INFORMATION DISCLOSURE --------
-\section{Information Disclosure — \cwe{200}}
+\section{Information Disclosure}
 
 \subsection{Vulnérabilité}
 
@@ -1073,48 +1073,48 @@ Le serveur \http{evil.attacker.lab:8080} héberge un panneau de contrôle (C2) a
 \midrule
 \endhead
 Session Fixation &
-  \xmark\ \texttt{use\_strict\_mode=0} \newline
-  \xmark\ \texttt{use\_only\_cookies=0} \newline
-  \xmark\ Pas de \texttt{session\_regenerate\_id()} &
-  \cmark\ \texttt{use\_strict\_mode=1} \newline
-  \cmark\ \texttt{use\_only\_cookies=1} \newline
-  \cmark\ \texttt{session\_regenerate\_id(true)} au login \\[6pt]
+  \texttt{use\_strict\_mode=0} \newline
+  \texttt{use\_only\_cookies=0} \newline
+  Pas de \texttt{session\_regenerate\_id()} &
+  \texttt{use\_strict\_mode=1} \newline
+  \texttt{use\_only\_cookies=1} \newline
+  \texttt{session\_regenerate\_id(true)} au login \\[6pt]
 
 XSS Stocké/Réfléchi &
-  \xmark\ \texttt{<?= \$r['content'] ?>} \newline
-  \xmark\ Pas de CSP &
-  \cmark\ \texttt{htmlspecialchars()} sur toutes les sorties \newline
-  \cmark\ CSP stricte (\texttt{script-src 'self'}) \\[6pt]
+  Données affichées sans échappement \newline
+  Pas de CSP &
+  \texttt{htmlspecialchars()} sur toutes les sorties \newline
+  CSP stricte (\texttt{script-src 'self'}) \\[6pt]
 
 CSRF &
-  \xmark\ Pas de token CSRF \newline
-  \xmark\ Accepte les paramètres GET &
-  \cmark\ Token CSRF par session (\texttt{random\_bytes(32)}) \newline
-  \cmark\ POST uniquement \\[6pt]
+  Pas de token CSRF \newline
+  Accepte les paramètres GET &
+  Token CSRF par session \newline
+  POST uniquement \\[6pt]
 
 Mots de passe &
-  \xmark\ Stockés en clair &
-  \cmark\ bcrypt (coût 12) + \texttt{password\_verify()} \\[6pt]
+  Stockés en clair &
+  bcrypt (coût 12) + \texttt{password\_verify()} \\[6pt]
 
 Cookies &
-  \xmark\ Pas de HttpOnly \newline
-  \xmark\ Pas de Secure \newline
-  \xmark\ Pas de SameSite &
-  \cmark\ \texttt{HttpOnly=true} \newline
-  \cmark\ \texttt{Secure=true} \newline
-  \cmark\ \texttt{SameSite=Strict} \\[6pt]
+  Pas de HttpOnly \newline
+  Pas de Secure \newline
+  Pas de SameSite &
+  \texttt{HttpOnly=true} \newline
+  \texttt{Secure=true} \newline
+  \texttt{SameSite=Strict} \\[6pt]
 
 Information Disclosure &
-  \xmark\ \texttt{X-Powered-By} présent \newline
-  \xmark\ SID affiché dans le HTML &
-  \cmark\ \texttt{expose\_php=Off} \newline
-  \cmark\ Aucun SID exposé \\[6pt]
+  \texttt{X-Powered-By} présent \newline
+  SID affiché dans le HTML &
+  \texttt{expose\_php=Off} \newline
+  Aucun SID exposé \\[6pt]
 
 Détection d'intrusion &
-  \xmark\ Aucun logging &
-  \cmark\ Audit log structuré \newline
-  \cmark\ Fingerprint de session \newline
-  \cmark\ Compte honeytoken \\
+  Aucun logging &
+  Audit log structuré \newline
+  Fingerprint de session \newline
+  Compte honeytoken \\
 
 \bottomrule
 \caption{Tableau comparatif des mesures de sécurité}
@@ -1146,50 +1146,9 @@ Détection d'intrusion &
 \chapter{Conclusion}
 % ============================================================
 
-\section{Bilan des vulnérabilités démontrées}
+Ce projet démontre qu'une chaîne d'attaque complète — de la session fixation au vol de fonds via XSS et CSRF — repose sur l'accumulation de négligences simples : absence de \texttt{session\_regenerate\_id()}, données affichées sans échappement, formulaires sensibles accessibles par GET sans token. Chacune de ces failles est triviale à corriger individuellement, mais leur combinaison produit un impact critique.
 
-Ce projet a permis de démontrer concrètement que la sécurité d'une application web ne dépend pas d'une seule mesure, mais d'une \textbf{défense en profondeur} combinant plusieurs protections indépendantes. Les sept vulnérabilités présentées illustrent une réalité fréquente dans les applications réelles :
-
-\begin{itemize}
-  \item Des vulnérabilités qui semblent mineures prises isolément (SID dans le HTML, GET sur un formulaire de virement) deviennent \textbf{critiques} lorsqu'elles sont enchaînées
-  \item Une seule vulnérabilité XSS suffit à contourner une protection anti-CSRF si les cookies ne sont pas \texttt{HttpOnly}
-  \item La session fixation est indétectable par la victime — elle ne voit qu'un rechargement de page ou un message \og session expirée \fg
-\end{itemize}
-
-\section{Impact réel de la chaîne d'attaque}
-
-L'enchaînement des failles démontrées dans ce projet constitue une attaque complète de bout en bout :
-
-\begin{enumerate}
-  \item Mallory dispose d'un compte légitimement ouvert sur la banque (accès blanc)
-  \item Mallory injecte un payload XSS via les commentaires (\textbf{surface publique})
-  \item Alice visite le site normalement — son cookie est remplacé (\textbf{sans clic suspect})
-  \item Alice se reconnecte — Mallory hérite de sa session (\textbf{hijack complet})
-  \item Mallory vide le compte d'Alice (\textbf{impact financier direct})
-\end{enumerate}
-
-\textbf{Impact estimé} : vol de 12\,450~€, violation du RGPD, atteinte à la réputation de la banque, potentielle mise en cause de la responsabilité légale.
-
-\section{Leçons retenues}
-
-\begin{enumerate}
-  \item \textbf{Toujours appeler \texttt{session\_regenerate\_id(true)} après une authentification réussie} — c'est une ligne de code qui empêche une classe entière d'attaques
-  \item \textbf{Échapper toutes les données dynamiques avant affichage} — aucune exception, même pour des données \og internes \fg
-  \item \textbf{Valider l'origine des requêtes sensibles} — token CSRF + \texttt{SameSite=Strict}
-  \item \textbf{La sécurité n'est pas ajoutée en fin de projet} — elle doit être intégrée dès la conception
-\end{enumerate}
-
-\section{Perspectives}
-
-Les contre-mesures implémentées dans la version sécurisée constituent une base solide. Des améliorations supplémentaires pourraient inclure :
-
-\begin{itemize}
-  \item Authentification multi-facteurs (TOTP/FIDO2)
-  \item Rate limiting et protection anti-brute-force
-  \item Web Application Firewall (WAF) en amont de Nginx
-  \item Chiffrement de la colonne de données sensibles en base
-  \item Audit et monitoring SIEM avec alertes en temps réel
-\end{itemize}
+La version sécurisée illustre qu'une \textbf{défense en profondeur} (régénération de session, CSP, tokens CSRF, cookies \texttt{HttpOnly}/\texttt{Secure}/\texttt{SameSite=Strict}, bcrypt) neutralise l'ensemble de la chaîne d'exploitation. La sécurité doit être intégrée dès la conception, non ajoutée en correctif.
 
 \bigskip
 \begin{center}
