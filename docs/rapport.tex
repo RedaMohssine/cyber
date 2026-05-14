@@ -1009,14 +1009,6 @@ Son navigateur envoie :
 
 Alice n'a saisi aucun mot de passe, validé aucun formulaire. Elle a simplement cliqué un bouton sur un site tiers.
 
-\subsection*{L'app sécurisée résiste}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.7\linewidth]{photos/secure-csrf-bloque.png}
-\caption{App sécurisée — requête CSRF rejetée (token manquant ou invalide)}
-\end{figure}
-
 % -------- DÉMO 8 --------
 \section{Démo 8 — Information Disclosure}
 
@@ -1119,28 +1111,6 @@ Détection d'intrusion &
 \bottomrule
 \caption{Tableau comparatif des mesures de sécurité}
 \end{longtable}
-
-\section{Visualisation de l'app sécurisée}
-
-\begin{figure}[H]
-\centering
-\begin{subfigure}[b]{0.48\linewidth}
-  \includegraphics[width=\linewidth]{photos/secure-session-regeneree.png}
-  \caption{Nouveau SID après login (session\_regenerate\_id)}
-\end{subfigure}
-\hfill
-\begin{subfigure}[b]{0.48\linewidth}
-  \includegraphics[width=\linewidth]{photos/secure-xss-bloque.png}
-  \caption{Payload XSS affiché comme texte (htmlspecialchars)}
-\end{subfigure}
-\caption{App sécurisée — les attaques sont neutralisées}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\linewidth]{photos/csp-header.png}
-\caption{En-tête Content-Security-Policy dans les réponses de l'app sécurisée}
-\end{figure}
 
 % ============================================================
 \chapter{Conclusion}
