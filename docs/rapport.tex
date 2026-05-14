@@ -201,68 +201,51 @@
 %  PAGE DE GARDE
 % ============================================================
 \begin{titlepage}
-\pagecolor{dark-bg}
-\color{white}
 \centering
-\vspace*{2cm}
 
-% Logo / titre banque
-{\fontsize{48}{52}\selectfont\bfseries\textcolor{primary-blue}{Captus}\textcolor{white}{Bank}}
+% ---- En-tête institution ----
+{\large\scshape Université — Cours d'Ethical Hacking}\\[0.3cm]
+{\normalsize Projet P03}
 
-\vspace{0.3cm}
-{\large\textcolor{gray!60}{Application bancaire de démonstration}}
+\vspace{1cm}
+\rule{\linewidth}{0.4pt}
 
-\vspace{1.5cm}
-\textcolor{primary-blue}{\rule{10cm}{1.5pt}}
+\vspace{1.8cm}
 
-\vspace{0.8cm}
-{\fontsize{22}{26}\selectfont\bfseries Rapport Technique}\\[0.4cm]
-{\fontsize{16}{20}\selectfont Session Fixation, XSS \& CSRF}\\[0.2cm]
-{\large Démonstration et contre-mesures}
+% ---- Titre principal ----
+{\LARGE\bfseries Rapport Technique}\\[0.6cm]
+{\Large Session Fixation, Cross-Site Scripting}\\[0.2cm]
+{\Large et Cross-Site Request Forgery}\\[0.8cm]
+{\large\itshape Exploitation et contre-mesures sur une application bancaire}\\[0.3cm]
+{\normalsize\textcolor{comment-gray}{CaptusBank — Application de démonstration pédagogique}}
 
-\vspace{0.6cm}
-\textcolor{primary-blue}{\rule{10cm}{1.5pt}}
+\vspace{1.2cm}
+\rule{\linewidth}{0.4pt}
 
-\vspace{1.5cm}
+\vspace{2cm}
 
-% Badges vulnérabilités
-\begin{tcolorbox}[
-  enhanced, width=9cm,
-  colback=dark-bg!80!black, colframe=vuln-red,
-  arc=8pt, halign=center,
-  top=10pt, bottom=10pt
-]
-  \textcolor{vuln-red}{\large\faExclamationTriangle}\\[4pt]
-  {\normalsize\textcolor{white}{CWE-384 · CWE-79 · CWE-352}}\\[2pt]
-  {\small\textcolor{gray!60}{CWE-256 · CWE-1004 · CWE-200}}
-\end{tcolorbox}
-
-\vspace{1.5cm}
-
-% Équipe
-{\large\bfseries Équipe}\\[0.5cm]
-\begin{tcolorbox}[
-  enhanced, width=9cm,
-  colback=dark-bg!80!black, colframe=primary-blue!60,
-  arc=8pt,
-  top=12pt, bottom=12pt
-]
-  \centering
-  {\normalsize Mohamed \textbf{MOHSSINE}}\\[4pt]
-  {\normalsize Ali \textbf{Braiki}}\\[4pt]
-  {\normalsize Youssef \textbf{Benaouda}}\\[4pt]
-  {\normalsize Grif \textbf{Omar}}
-\end{tcolorbox}
-
-\vspace{1.5cm}
-
-{\large Cours d'Ethical Hacking}\\[0.2cm]
-{\normalsize\textcolor{gray!60}{Université — Projet P03}}\\[0.4cm]
-{\normalsize\textcolor{gray!60}{Mai 2026}}
+% ---- Auteurs ----
+{\normalsize\bfseries Réalisé par}\\[0.6cm]
+\begin{tabular}{ll}
+  Mohamed & \textbf{MOHSSINE} \\[4pt]
+  Ali     & \textbf{Braiki}   \\[4pt]
+  Youssef & \textbf{Benaouda} \\[4pt]
+  Grif    & \textbf{Omar}     \\
+\end{tabular}
 
 \vfill
-\pagecolor{white}
-\color{black}
+
+% ---- Pied de page ----
+\begin{tabular}{@{}p{0.45\linewidth}p{0.45\linewidth}@{}}
+  \textbf{Encadrant :} & \textbf{Année universitaire :} \\
+  Youssef Benaouda     & 2025 -- 2026 \\[6pt]
+  \textbf{Date de remise :} & \textbf{Référence projet :} \\
+  Mai 2026             & P03 -- Session Fixation \& XSS \\
+\end{tabular}
+
+\vspace{0.8cm}
+\rule{\linewidth}{0.4pt}
+
 \end{titlepage}
 
 % ============================================================
